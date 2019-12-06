@@ -1,0 +1,11 @@
+{
+  "profiles": {
+    "IotHubSync.TestConsoleApp": {
+      "commandName": "Project",
+      "environmentVariables": {
+        "IotHubConnectionStringSlave": "HostName=IotHubSlave.azure-devices.net;SharedAccessKeyName=iothubowner;SharedAccessKey=uplQB1F9UFhiG0GPa7uC7sNsgEeJd3y3Lhqgcp3Lh+A=",
+        "IotHubConnectionStringMaster": "HostName=IotHubMaster.azure-devices.net;SharedAccessKeyName=iothubowner;SharedAccessKey=Ef1UcqSo/7VWuM9K65cU06KbaTg0H/iciFL552C2fkU="
+      }
+    }
+  }
+}

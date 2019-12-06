@@ -1,0 +1,44 @@
+{
+  "iisSettings": {
+    "windowsAuthentication": false,
+    "anonymousAuthentication": true,
+    "iisExpress": {
+      "applicationUrl": "http://localhost:5000",
+      "sslPort": 0
+    }
+  },
+  "$schema": "http://json.schemastore.org/launchsettings.json",
+  "profiles": {
+    "IIS Express": {
+      "commandName": "IISExpress",
+      "launchBrowser": true,
+      "launchUrl": "api/test",
+      "environmentVariables": {
+        "IotHubConnectionStringSlave": "HostName=IotHubSlave.azure-devices.net;SharedAccessKeyName=iothubowner;SharedAccessKey=uplQB1F9UFhiG0GPa7uC7sNsgEeJd3y3Lhqgcp3Lh+A=",
+        "IotHubConnectionStringMaster": "HostName=IotHubMaster.azure-devices.net;SharedAccessKeyName=iothubowner;SharedAccessKey=Ef1UcqSo/7VWuM9K65cU06KbaTg0H/iciFL552C2fkU=",
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      }
+    },
+    "IotHubSync.Service": {
+      "commandName": "Project",
+      "launchBrowser": true,
+      "launchUrl": "api/test",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      },
+      "applicationUrl": "https://localhost:5001;http://localhost:5000"
+    },
+    "Docker": {
+      "commandName": "Docker",
+      "launchBrowser": true,
+      "launchUrl": "{Scheme}://{ServiceHost}:{ServicePort}/api/values",
+      "environmentVariables": {
+        "ASPNETCORE_URLS": "https://+:443;http://+:80",
+        "ASPNETCORE_HTTPS_PORT": "44383"
+      },
+      "httpPort": 64825,
+      "useSSL": true,
+      "sslPort": 44383
+    }
+  }
+}
