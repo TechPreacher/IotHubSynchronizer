@@ -18,7 +18,6 @@ The IoT Hub Synchronizer syncronizes:
   - Secondary Key
   - Connextion state to IoT Hub (enable/disable)
   - Device Twin
-  - Modules
 
 ## Project Structure
 
@@ -38,3 +37,7 @@ tbd.
 ## Configuring Azure Event Grid
 
 tbd.
+
+## Missing features
+
+- Synchronization of IoT Edge device Modules and Module Twins
