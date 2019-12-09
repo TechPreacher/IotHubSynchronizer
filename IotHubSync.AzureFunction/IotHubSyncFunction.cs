@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
 namespace IotHubSync.AzureFunction
 {
     using Microsoft.Azure.WebJobs;
@@ -5,57 +8,56 @@ namespace IotHubSync.AzureFunction
     using Microsoft.Azure.WebJobs.Extensions.EventGrid;
     using Microsoft.Extensions.Logging;
     using System.Threading.Tasks;
-    using System.Globalization;
     using IotHubSync.Logic;
     using Microsoft.Extensions.Configuration;
+    using Microsoft.Azure.EventGrid;
 
     public static class IotHubSyncFunction
     {
         private static readonly string IotHubConnectionStringMasterKey = "IotHubConnectionStringMaster";
         private static readonly string IotHubConnectionStringSlaveKey = "IotHubConnectionStringSlave";
 
-        [FunctionName("DeviceCreated")]
-        public static async Task DeviceCreated([EventGridTrigger]EventGridEvent eventGridEvent, ILogger logger, ExecutionContext context)
+        [FunctionName("EventGridDeviceCreatedOrDeleted")]
+        public static async Task EventGridDeviceCreatedOrDeleted([EventGridTrigger]EventGridEvent eventGridEvent, ILogger logger, ExecutionContext context)
         {
-            logger.LogInformation($"DeviceCreated function processed a request at {System.DateTime.UtcNow.ToString(new CultureInfo("en-US"))}.");
+            bool isSuccess = true;
 
-            var deviceSynchronizer = new DeviceSynchronizer(GetConnectionStrings(context), logger);
-
-            var isSuccess = await deviceSynchronizer.CreateDevice(eventGridEvent.Data.ToString());
-
-            if (isSuccess)
+            if (eventGridEvent.EventType == EventTypes.IoTHubDeviceCreatedEvent ||
+                eventGridEvent.EventType == EventTypes.IoTHubDeviceDeletedEvent)
             {
-                logger.LogInformation($"DeviceCreated function completed successfully.");
+                var deviceSynchronizer = new DeviceSynchronizer(GetConnectionStrings(context), logger);
+
+                if (eventGridEvent.EventType == EventTypes.IoTHubDeviceCreatedEvent)
+                {
+                    logger.LogInformation($"EventGridDeviceCreatedOrDeleted function received IotHubDeviceCreatedEventData event from EventGrid.");
+                    isSuccess = await deviceSynchronizer.CreateDevice(eventGridEvent.Data.ToString());
+                }
+
+                else if (eventGridEvent.EventType == EventTypes.IoTHubDeviceDeletedEvent)
+                {
+                    logger.LogInformation($"EventGridDeviceCreatedOrDeleted function received IotHubDeviceDeletedEventData event from EventGrid.");
+                    isSuccess = await deviceSynchronizer.DeleteDevice(eventGridEvent.Data.ToString());
+                }
+
+                if (isSuccess)
+                {
+                    logger.LogInformation($"EventGridDeviceCreatedOrDeleted function completed successfully.");
+                }
+                else
+                {
+                    logger.LogError($"EventGridDeviceCreatedOrDeleted function completed with errors.");
+                }
             }
             else
             {
-                logger.LogError($"DeviceCreated function completed with errors.");
+                logger.LogInformation($"EventGridDeviceCreatedOrDeleted function received unsupported event: {eventGridEvent.EventType}.");
             }
         }
 
-        [FunctionName("DeviceDeleted")]
-        public static async Task DeviceDeleted([EventGridTrigger]EventGridEvent eventGridEvent, ILogger logger, ExecutionContext context)
+        [FunctionName("TimerTriggerSyncIotHubs")]
+        public static async Task TimerTriggerSyncIotHubs([TimerTrigger("0 0 * * * *")]TimerInfo myTimer, ILogger logger, ExecutionContext context)
         {
-            logger.LogInformation($"DeviceDeleted function processed a request at {System.DateTime.UtcNow.ToString(new CultureInfo("en-US"))}.");
-
-            var deviceSynchronizer = new DeviceSynchronizer(GetConnectionStrings(context), logger);
-
-            var isSuccess = await deviceSynchronizer.DeleteDevice(eventGridEvent.Data.ToString());
-
-            if (isSuccess)
-            {
-                logger.LogInformation($"DeviceDeleted function completed successfully.");
-            }
-            else
-            {
-                logger.LogError($"DeviceDeleted function completed with errors.");
-            }
-        }
-
-        [FunctionName("SyncIotHubs")]
-        public static async Task SyncIotHubs([TimerTrigger("0 0 * * * *")]TimerInfo myTimer, ILogger logger, ExecutionContext context)
-        {
-            logger.LogInformation($"SyncIotHubs function processed a request {System.DateTime.UtcNow.ToString(new CultureInfo("en-US"))}.");
+            logger.LogInformation($"TimerTriggerSyncIotHubs function started.");
 
             var deviceSynchronizer = new DeviceSynchronizer(GetConnectionStrings(context), logger);
 
@@ -63,11 +65,11 @@ namespace IotHubSync.AzureFunction
 
             if (isSuccess)
             {
-                logger.LogInformation($"SyncIotHubs function completed successfully.");
+                logger.LogInformation($"TimerTriggerSyncIotHubs function completed successfully.");
             }
             else
             {
-                logger.LogError($"SyncIotHubs function completed with errors.");
+                logger.LogError($"TimerTriggerSyncIotHubs function completed with errors.");
             }
         }
 

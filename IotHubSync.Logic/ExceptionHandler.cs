@@ -1,9 +1,12 @@
-﻿using System;
-using System.Collections.ObjectModel;
-using System.Reflection;
+﻿// Copyright (c) Microsoft. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 namespace IotHubSync.Logic
 {
+    using System;
+    using System.Collections.ObjectModel;
+    using System.Reflection;
+
     public static class ExceptionHandler
     {
         public static bool IsFatal(this Exception exception)

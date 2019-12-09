@@ -1,4 +1,7 @@
-﻿namespace IotHubSync.Service
+﻿// Copyright (c) Microsoft. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+namespace IotHubSync.Service
 {
     using IotHubSync.Service.Classes;
     using IotHubSync.Service.Interfaces;
@@ -8,7 +11,6 @@
     using Microsoft.Extensions.DependencyInjection;
     using Microsoft.Extensions.Hosting;
     using Microsoft.Extensions.Logging;
-    using System.Threading;
 
     public class Startup
     {

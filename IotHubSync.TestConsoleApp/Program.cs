@@ -1,12 +1,14 @@
-﻿using IotHubSync.Logic;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
-using System.IO;
-using System.Threading.Tasks;
+﻿// Copyright (c) Microsoft. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 namespace IotHubSync.TestConsoleApp
 {
+    using IotHubSync.Logic;
+    using Microsoft.Extensions.Configuration;
+    using Microsoft.Extensions.Logging;
+    using System.IO;
+    using System.Threading.Tasks;
+
     class Program
     {
         private static readonly string IotHubConnectionStringMasterKey = "IotHubConnectionStringMaster";

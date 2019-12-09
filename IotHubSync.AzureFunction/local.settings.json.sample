@@ -1,0 +1,9 @@
+{
+  "IsEncrypted": false,
+  "Values": {
+    "AzureWebJobsStorage": "UseDevelopmentStorage=true",
+    "FUNCTIONS_WORKER_RUNTIME": "dotnet"
+  },
+  "IoTHubConnectionStringMaster": "Add Master IoT Hub Connection String: iothubowner for local testing",
+  "IoTHubConnectionStringSlave": "Add Slave IoT Hub Connection String: iothubowner for local testing"
+}

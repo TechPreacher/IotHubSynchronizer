@@ -1,4 +1,7 @@
-﻿namespace IotHubSync.Logic
+﻿// Copyright (c) Microsoft. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+namespace IotHubSync.Logic
 {
     using Microsoft.Azure.Devices;
     using Newtonsoft.Json.Linq;
