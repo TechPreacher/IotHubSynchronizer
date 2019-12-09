@@ -59,7 +59,7 @@ Set them to the iothubowner shared access policy of your master- and slave IoT H
 
 ![Azure Function App Settings](./documentation/images/az-function-settings.png "Azure Function App Settings")
 
-### Connecting IoT Hub Event Grid Events
+### Connecting IoT Hub Event Grid Events to the Azure Function
 
 To have the Azure Function App run whenever a device is added to or deleted from the Master IoT Hub, create a subscription for the `Created` and `Deleted` events in IoT Hub that trigger the Azure Function App.
 
@@ -84,11 +84,44 @@ You can also see the logs of the functions in their `Monitor` section.
 
 ## Setting up the WebAPI app
 
+This chapter targets the `IotHubSync.Service` project in the solution.
+
+Set the `IotHubConnectionStringMaster` and `IotHubConnectionStringSlave` in the project's `appsettings.json` file or set the Azure App Service environment variables as describe4d below.
+
 Use the Visual Studio Web API publish wizard to deploy the `IotHubSync.Service` project to an ASP.NET App Service or App Service Linux.
+
+In the Azure portal, you may now set the following environment variables:
+
+- **IotHubConnectionStringMaster**
+- **IotHubConnectionStringSlave**
+- **SyncTimerMinutes**
+
+![Azure App Service Configuration](./documentation/images/az-appservice-configuration.png "Azure App Service Configuration")
 
 After publishing, navigate to the App Service's `/api/test` URL to verify, that it is running. It should respond with "**IotHubSync.Service is up.**"
 
+### Connecting IoT Hub Event Grid Events to the App Service
 
+To have the Azure Function App run whenever a device is added to or deleted from the Master IoT Hub, create a subscription for the `Created` and `Deleted` events in IoT Hub that trigger the Azure App Service.
+
+Open the Master IoT Hub and select `Events`. Click on `+ Event Subscription` and fill the form as follows:
+
+- **Event Schema**: `Event Grid Schema`
+- **Event Types**: `Device Created` & `Device Deleted`
+- **Endpoint Type**: `Web Hook`
+- **Endpoint**: The url of you App service starting with `https://` and ending with `api/eventgrid_device_created_deleted`
+
+![IoT Hub Event Subscription](./documentation/images/az-appservice-event-subscriptioni-create.png "IoT Hub Event Subscription")
+
+### Testing Event Grid and the App Service locally
+
+To manually debug Azure Event Grid interacting with the code, run the IotHubSync.Service locally and then use [Ngrok](https://ngrok.com/) to make it accessible from the Internet.
+
+```
+$ .\ngrok.exe http -host-header=rewrite 5000
+```
+
+Use the Ngrok assigned SSL endpoint to configure Azure Event Grid. Events will then be forwarded to your debugger.
 
 ## Missing features
 

@@ -38,15 +38,11 @@ namespace IotHubSync.Service.Classes
 
             while (!stoppingToken.IsCancellationRequested)
             {
-                _logger.LogDebug($"SyncBackgroundService task is waiting for semaphore...");
-
                 await _semaphoreSingleton.Semaphore.WaitAsync();
 
                 _logger.LogDebug($"SyncBackgroundService is synchronizing IoT Hubs.");
 
                 var isSuccess = await _deviceSynchronizerSingleton.DeviceSynchronizer.SyncIotHubsAsync();
-
-                _logger.LogDebug($"SyncBackgroundService task is releasing semaphore...");
 
                 _semaphoreSingleton.Semaphore.Release();
 
