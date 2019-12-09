@@ -20,7 +20,7 @@ namespace IotHubSync.Service
                 .ConfigureAppConfiguration((hostingContext, config) =>
                 {
                     config.SetBasePath(Directory.GetCurrentDirectory());
-                    config.AddJsonFile("appsettings.json", optional: false, reloadOnChange: false);
+                    config.AddJsonFile("appsettings.json", optional: true, reloadOnChange: false);
                     config.AddJsonFile("appsettings.Development.json", optional: true, reloadOnChange: false);
                     config.AddEnvironmentVariables();
                 })
