@@ -42,7 +42,11 @@ The Azure function app has three functions:
 
 The time triggered synchronization is configured to run ever full hour but can be changed based on preference.
 
+### Debuggning
+
 To debug the Azure Function App locally, copy the `local.settings.json.sample` file to `local.settings.json` and replace the `IoTHubConnectionStringMaster` and `IoTHubConnectionStringSlave` values to the iothubowner shared access policy of your master- and slave IoT Hubs.
+
+### Deployment
 
 To deploy the Azure Function App, publish it using [Visual Studio's publish function](https://docs.microsoft.com/en-us/azure/azure-functions/functions-develop-vs#publish-to-azure) or [Visual Studio Code](https://docs.microsoft.com/en-us/azure/javascript/tutorial-vscode-serverless-node-01).
 
@@ -80,11 +84,11 @@ You can also see the logs of the functions in their `Monitor` section.
 
 ## Setting up the WebAPI app
 
-tbd.
+Use the Visual Studio Web API publish wizard to deploy the `IotHubSync.Service` project to an ASP.NET App Service or App Service Linux.
 
-## Configuring Azure Event Grid
+After publishing, navigate to the App Service's `/api/test` URL to verify, that it is running. It should respond with "**IotHubSync.Service is up.**"
 
-tbd.
+
 
 ## Missing features
 
