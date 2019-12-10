@@ -21,10 +21,11 @@ The IoT Hub Synchronizer syncronizes:
 
 ## Project Structure
 
-- **IotHubSync.AzureFunction**: The Azure Function project
-- **IotHubSync.Logic**: The core logic of the IoT Hub Synchronizer
-- **IotHubSync.Service**: The WebAPI app
-- **IotHubSync.TestConsoleApp**: A DotNet Core console app that can be used to test the functionality of the Synchronizer.
+- **/IotHubSync.AzureFunction**: The Azure Function project
+- **/IotHubSync.Logic**: The core logic of the IoT Hub Synchronizer
+- **/IotHubSync.Service**: The WebAPI app
+- **/IotHubSync.TestConsoleApp**: A DotNet Core console app that can be used to test the functionality of the Synchronizer.
+- **/Dockerfile&**: Dockerfile used to build the WebAPI app as a Docker image.
 
 ## Preparing
 
