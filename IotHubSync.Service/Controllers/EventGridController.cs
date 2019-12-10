@@ -11,7 +11,7 @@ namespace IotHubSync.Service.Controllers
     using Microsoft.Azure.EventGrid;
     using Microsoft.Azure.EventGrid.Models;
     using Microsoft.Extensions.Logging;
-    using Newtonsoft.Json.Linq;
+    using System.Text.Json;
 
     [Route("api"), AllowAnonymous]
     [ApiController]
@@ -20,6 +20,10 @@ namespace IotHubSync.Service.Controllers
         private readonly ILogger _logger;
         private readonly IDeviceSynchronizerSingleton _deviceSynchronizerSingleton;
         private readonly ISemaphoreSingleton _semaphoreSingleton;
+        private static readonly JsonSerializerOptions jsonSerializerOptions = new JsonSerializerOptions
+        {
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+        };
 
         public EventGridController(
             ILogger<EventGridController> logger, 
@@ -115,9 +119,9 @@ namespace IotHubSync.Service.Controllers
                     SubscriptionValidationEventData eventData;
                     try
                     {
-                        if (receivedEvent.Data != null && receivedEvent.Data is JObject jObject)
+                        if (receivedEvent.Data != null && receivedEvent.Data is JsonElement jsonElement)
                         {
-                            eventData = jObject.ToObject<SubscriptionValidationEventData>();
+                            eventData = JsonSerializer.Deserialize<SubscriptionValidationEventData>(jsonElement.GetRawText(), jsonSerializerOptions);
                         }
                         else
                         {
@@ -153,9 +157,9 @@ namespace IotHubSync.Service.Controllers
             IotHubDeviceDeletedEventData eventData = null;
             try
             {
-                if (receivedEvent.Data is JObject jObject)
+                if (receivedEvent.Data is JsonElement jsonElement)
                 {
-                    eventData = jObject.ToObject<IotHubDeviceDeletedEventData>();
+                    eventData = JsonSerializer.Deserialize<IotHubDeviceDeletedEventData>(jsonElement.GetRawText(), jsonSerializerOptions);
                 }
                 else
                 {
@@ -191,9 +195,9 @@ namespace IotHubSync.Service.Controllers
             IotHubDeviceCreatedEventData eventData = null;
             try
             {
-                if (receivedEvent.Data is JObject jObject)
+                if (receivedEvent.Data is JsonElement jsonElement)
                 {
-                    eventData = jObject.ToObject<IotHubDeviceCreatedEventData>();
+                    eventData = JsonSerializer.Deserialize<IotHubDeviceCreatedEventData>(jsonElement.GetRawText(), jsonSerializerOptions);
                 }
                 else
                 {
