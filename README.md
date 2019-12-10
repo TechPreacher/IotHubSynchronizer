@@ -1,4 +1,4 @@
-# Iot Hub Synchronizer
+# Azure IoT Hub Synchronizer
 
 The goal of the IoT Hub Syncronizer is to mirror IoT device configurations and IoT Edge device configurations from a master Azure IoT Hub to a slave. It can be run as an Azure function or a WebAPI app. It is triggered either via a timer or via EventGrid events for Azure IoT Hub device creation or deletion.
 
@@ -33,21 +33,18 @@ Set up two IoT Hubs in Azure, one will be the master/primary, one the slave/seco
 
 There are multiple ways to host the IoT Hub Synchronizer. See the following sections for detailed descriptions:
 
-- Host as an Azure Function App
-- Host as an Azure Web API App
-- Host as a Docker container (for example in an Azure Container Instance)
-
-
+- [Host as an Azure Function App](#setting-up-the-azure-function)
+- [Host as an Azure Web API App](#setting-up-the-web-api-app)
+- [Host as a Docker container](#setting-up-the-docker-image) (for example in an Azure Container Instance)
 
 ## Setting up the Azure Function
 
 This chapter targets the `IotHubSync.AzureFunction` project in the solution.
 
-The Azure function app has three functions:
+The Azure function app has two functions:
 
 - **EventGridDeviceCreatedOrDeleted**: Gets triggered by Azure Event Grid when a device is created or deleted in the master IoT Hub.
 - **TimerTriggerSyncIotHubs**: A timer triggered function that synchronizes any manual changes made to devices in the master IoT Hub.
-
 
 The time triggered synchronization is configured to run ever full hour but can be changed based on preference.
 
@@ -94,6 +91,16 @@ You can also see the logs of the functions in their `Monitor` section.
 ## Setting up the Web API app
 
 This chapter targets the `IotHubSync.Service` project in the solution.
+
+The Web API app has the following REST API:
+
+- **/api/test**: Endpoint to verify if the service is up (may be removed or protected from anonymous access)
+- **/api/sync**: Endpoint to manually trigger an IoT Hub synchronization (may be removed or protected from anonymous access)
+- **/api/eventgrid_device_created_deleted**: Endpoint that handles Azure Event Grid events when a device is created or deleted in the master IoT Hub.
+
+
+
+The time triggered synchronization is configured using the  **SyncTimerMinutes** environment variable / setting.
 
 Set the `IotHubConnectionStringMaster` and `IotHubConnectionStringSlave` in the project's `appsettings.json` file or set the Azure App Service environment variables as describe4d below.
 
@@ -148,13 +155,15 @@ You can use the [Dockerfile](./Dockerfile) to build a docker image of the Web AP
 
 ![Azure Container Instance Configuration 3](./documentation/images/az-aci-configuration3.png "Azure Container Instance Configuration 3")
 
-Note that in order to work with [Azure Event Grid events](https://docs.microsoft.com/en-us/azure/event-grid/security-authentication), the REST API of the container needs to be accessible using a valid, trusted SSL certificate. [Here is how to add your certificate to the Web API app](https://github.com/dotnet/dotnet-docker/blob/master/samples/aspnetapp/aspnetcore-docker-https-development.md).
-
 After publishing the ACI, you can read the logfiles using the Azure Command Line Interface:
 
 ```bash
 $ az container logs --resource-group <Resource Group> --name <ACI Name>
 ```
+
+## Azure Event Grid Security
+
+In order to work with [Azure Event Grid events](https://docs.microsoft.com/en-us/azure/event-grid/security-authentication), the REST API of the IoT Hub Synchronizer needs to be accessible using a valid, trusted SSL certificate. [Here is how to add your certificate to the Web API app](https://github.com/dotnet/dotnet-docker/blob/master/samples/aspnetapp/aspnetcore-docker-https-development.md) when building it as a Docker image.
 
 ## Missing features
 
