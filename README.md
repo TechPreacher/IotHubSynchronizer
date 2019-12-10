@@ -140,7 +140,7 @@ $ az webapp log tail --resource-group <Resource Group> --name <Web API App Name>
 To manually debug Azure Event Grid interacting with the code, run the IotHubSync.Service locally and then use [Ngrok](https://ngrok.com/) to make it accessible from the Internet.
 
 ```bash
-$ .\ngrok.exe http -host-header=rewrite 5000
+$ .\ngrok.exe http -host-header=rewrite <Local IP port>
 ```
 
 Use the Ngrok assigned SSL endpoint to configure Azure Event Grid. Events will then be forwarded to your debugger.
@@ -168,3 +168,5 @@ In order to work with [Azure Event Grid events](https://docs.microsoft.com/en-us
 ## Missing features
 
 - Synchronization of IoT Edge device Modules and Module Twins
+- Switch from Newtonsoft.Json to System.Text.Json and System.Text.Json.Serialization.
+  - Currently blocked by [this issue](https://github.com/dotnet/corefx/issues/38163) as the *Microsoft.Azure.EventGrid.Model* classes have read-only properties.
