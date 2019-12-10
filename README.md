@@ -24,12 +24,20 @@ The IoT Hub Synchronizer syncronizes:
 - **/IotHubSync.AzureFunction**: The Azure Function project
 - **/IotHubSync.Logic**: The core logic of the IoT Hub Synchronizer
 - **/IotHubSync.Service**: The WebAPI app
-- **/IotHubSync.TestConsoleApp**: A DotNet Core console app that can be used to test the functionality of the Synchronizer.
-- **/Dockerfile&**: Dockerfile used to build the WebAPI app as a Docker image.
+- **/IotHubSync.TestConsoleApp**: A DotNet Core console app that can be used to test the functionality of the Synchronizer
+- **/Dockerfile**: Dockerfile used to build the WebAPI app as a Docker image
 
 ## Preparing
 
 Set up two IoT Hubs in Azure, one will be the master/primary, one the slave/secondary. All the changes applied to the master IoT Hub will be mirrored in the slave.
+
+There are multiple ways to host the IoT Hub Synchronizer. See the following sections for detailed descriptions:
+
+- Host as an Azure Function App
+- Host as an Azure Web API App
+- Host as a Docker container (for example in an Azure Container Instance)
+
+
 
 ## Setting up the Azure Function
 
@@ -83,7 +91,7 @@ You can also see the logs of the functions in their `Monitor` section.
 
 ![Azure Function Manual Run](./documentation/images/az-function-ilogger.png "Azure Function Manual Run")
 
-## Setting up the WebAPI app
+## Setting up the Web API app
 
 This chapter targets the `IotHubSync.Service` project in the solution.
 
@@ -114,15 +122,39 @@ Open the Master IoT Hub and select `Events`. Click on `+ Event Subscription` and
 
 ![IoT Hub Event Subscription](./documentation/images/az-appservice-event-subscriptioni-create.png "IoT Hub Event Subscription")
 
+You can read the logfiles of the Auzre Web API app after [enabling App Service Logging](https://docs.microsoft.com/en-us/azure/app-service/troubleshoot-diagnostic-logs) in the Azure Portal using the Azure Command Line Interface:
+
+```bash
+$ az webapp log tail --resource-group <Resource Group> --name <Web API App Name>  
+```
+
 ### Testing Event Grid and the App Service locally
 
 To manually debug Azure Event Grid interacting with the code, run the IotHubSync.Service locally and then use [Ngrok](https://ngrok.com/) to make it accessible from the Internet.
 
-```
+```bash
 $ .\ngrok.exe http -host-header=rewrite 5000
 ```
 
 Use the Ngrok assigned SSL endpoint to configure Azure Event Grid. Events will then be forwarded to your debugger.
+
+## Setting up the Docker Image
+
+You can use the [Dockerfile](./Dockerfile) to build a docker image of the Web API app and then host it i.e. in a Azure Container Instance. You can configure the IotHubConnectionStringMaster, IotHubConnectionStringSlave and SyncTimerMinutes in the [appsettings.json](./IotHubSync.Service/appsettings.json) file or provide them as environment variables using ACI. Make sure to expose TCP port 443 in ACI.
+
+![Azure Container Instance Configuration 1](./documentation/images/az-aci-configuration1.png "Azure Container Instance Configuration 1")
+
+![Azure Container Instance Configuration 2](./documentation/images/az-aci-configuration2.png "Azure Container Instance Configuration 2")
+
+![Azure Container Instance Configuration 3](./documentation/images/az-aci-configuration3.png "Azure Container Instance Configuration 3")
+
+Note that in order to work with [Azure Event Grid events](https://docs.microsoft.com/en-us/azure/event-grid/security-authentication), the REST API of the container needs to be accessible using a valid, trusted SSL certificate. [Here is how to add your certificate to the Web API app](https://github.com/dotnet/dotnet-docker/blob/master/samples/aspnetapp/aspnetcore-docker-https-development.md).
+
+After publishing the ACI, you can read the logfiles using the Azure Command Line Interface:
+
+```bash
+$ az container logs --resource-group <Resource Group> --name <ACI Name>
+```
 
 ## Missing features
 
