@@ -31,6 +31,7 @@ namespace IotHubSync.TestConsoleApp
                     .AddFilter("Microsoft", LogLevel.Warning)
                     .AddFilter("System", LogLevel.Warning)
                     .AddFilter("LoggingConsoleApp.Program", LogLevel.Debug)
+                    .SetMinimumLevel(LogLevel.Debug)
                     .AddConsole()
                     .AddEventLog();
             });
