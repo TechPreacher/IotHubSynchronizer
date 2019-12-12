@@ -2,6 +2,10 @@
 
 The goal of the IoT Hub Syncronizer is to mirror IoT device configurations and IoT Edge device configurations from a master Azure IoT Hub to a slave. It can be run as an Azure function or a WebAPI app. It is triggered either via a timer or via EventGrid events for Azure IoT Hub device creation or deletion.
 
+# Architecture
+
+![IotHubSync Architecture](./documentation/images/iothubsync-architecture.png)"IotHubSync Architecture"
+
 The IoT Hub Synchronizer syncronizes:
 
 - IoT Hub IoT Devices
