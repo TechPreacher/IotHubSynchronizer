@@ -4,7 +4,7 @@ The goal of the IoT Hub Syncronizer is to mirror IoT device configurations and I
 
 # Architecture
 
-![IotHubSync Architecture](./documentation/images/iothubsync-architecture.png)"IotHubSync Architecture"
+![IotHubSync Architecture](./documentation/images/iothubsync-architecture.png"IotHubSync Architecture")
 
 The IoT Hub Synchronizer syncronizes:
 
