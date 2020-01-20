@@ -33,6 +33,7 @@ namespace IotHubSync.TestConsoleApp
                     .AddFilter("LoggingConsoleApp.Program", LogLevel.Debug)
                     .SetMinimumLevel(LogLevel.Debug)
                     .AddConsole()
+                    .AddDebug()
                     .AddEventLog();
             });
             ILogger logger = loggerFactory.CreateLogger<Program>();
