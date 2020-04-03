@@ -21,3 +21,5 @@ jobs:
       uses: opspresso/action-docker@v0.2.8
       with:
         registry-type: --docker
+        username: ${{ secrets.DOCKER_USERNAME }}
+        password: ${{ secrets.DOCKER_PASSWORD }}
