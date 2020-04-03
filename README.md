@@ -1,3 +1,5 @@
+![Docker Image CI](https://github.com/TechPreacher/IotHubSynchronizer/workflows/Docker%20Image%20CI/badge.svg?branch=master)
+
 # Azure IoT Hub Synchronizer
 
 The goal of the IoT Hub Syncronizer is to mirror IoT device configurations and IoT Edge device configurations from a master Azure IoT Hub to a slave. It can be run as an Azure function or a WebAPI app. It is triggered either via a timer or via EventGrid events for Azure IoT Hub device creation or deletion.
