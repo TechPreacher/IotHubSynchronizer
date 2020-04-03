@@ -26,5 +26,5 @@ jobs:
           PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
           DOCKERFILE: "Dockerfile"
           IMAGE_NAME: "techpreacher/iothubsync.service"
-          TAG_NAME: $(date +%s)
+          TAG_NAME: "0.0.2"
           LATEST: "true"
