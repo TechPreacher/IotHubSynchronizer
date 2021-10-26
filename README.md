@@ -73,7 +73,7 @@ Set them to the iothubowner shared access policy of your master- and slave IoT H
 
 ### Connecting IoT Hub Event Grid Events to the Azure Function
 
-To have the Azure Function App run whenever a device is added to or deleted from the Master IoT Hub, create a subscription for the `Created` and `Deleted` events in IoT Hub that trigger the Azure Function App.
+To have the Azure Function App run whenever a device is added to or deleted from the Master IoT Hub, create a subscription for the `Created` and `Deleted` events in the master IoT Hub that will trigger the Azure Function App.
 
 Open the Master IoT Hub and select `Events`. Click on `+ Event Subscription` and fill the form as follows:
 
@@ -108,7 +108,7 @@ The Web API app has the following REST API:
 
 The time triggered synchronization is configured using the  **SyncTimerMinutes** environment variable / setting.
 
-Set the `IotHubConnectionStringMaster` and `IotHubConnectionStringSlave` in the project's `appsettings.json` file or set the Azure App Service environment variables as describe4d below.
+Set the `IotHubConnectionStringMaster` and `IotHubConnectionStringSlave` in the project's `appsettings.json` file or set the Azure App Service environment variables as described below.
 
 Use the Visual Studio Web API publish wizard to deploy the `IotHubSync.Service` project to an ASP.NET App Service or App Service Linux.
 

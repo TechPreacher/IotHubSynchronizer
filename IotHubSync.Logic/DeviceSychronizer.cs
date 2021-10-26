@@ -10,6 +10,7 @@ namespace IotHubSync.Logic
     using System.Threading.Tasks;
     using Microsoft.Extensions.Logging;
     using Newtonsoft.Json;
+    using Microsoft.Azure.Devices.Common.Exceptions;
 
     public class DeviceSynchronizer
     {
@@ -28,10 +29,10 @@ namespace IotHubSync.Logic
                 && ValidateConnectionString(_connectionStringSlave, IotHubType.Slave);
         }
 
-        public async Task<bool> CreateDevice(string eventGridData)
-        {
-            bool isSuccess = true;
 
+
+        public async Task<bool> CreateDeviceFromEventGridMessage(string eventGridData)
+        {
             // Only run if connection strings are valid
             if (!_isValidConnectionStrings)
             {
@@ -50,6 +51,13 @@ namespace IotHubSync.Logic
                 _logger.LogError(ex, $"Invalid information received from Event Grid.");
                 return false;
             }
+
+            return await CreateDeviceFromDeviceId(deviceIdMaster);
+        }
+
+        public async Task<bool> CreateDeviceFromDeviceId(string deviceIdMaster)
+        {
+            bool isSuccess = true;
 
             if (!ConnectRegistryManager(out RegistryManager registryManagerMaster, IotHubType.Master) ||
                 !ConnectRegistryManager(out RegistryManager registryManagerSlave, IotHubType.Slave))
@@ -78,10 +86,8 @@ namespace IotHubSync.Logic
             return isSuccess;
         }
 
-        public async Task<bool> DeleteDevice(string eventGridData)
+        public async Task<bool> DeleteDeviceFromEventGridMessage(string eventGridData)
         {
-            bool isSuccess = true;
-
             // Only run if connection strings are valid
             if (!_isValidConnectionStrings)
             {
@@ -99,6 +105,13 @@ namespace IotHubSync.Logic
                 _logger.LogError(ex, $"Invalid information received from Event Grid.");
                 return false;
             }
+
+            return await DeleteDeviceFromDeviceId(deviceIdMaster);
+        }
+
+        public async Task<bool> DeleteDeviceFromDeviceId(string deviceIdMaster)
+        {
+            bool isSuccess = true;
 
             if (!ConnectRegistryManager(out RegistryManager registryManagerSlave, IotHubType.Slave))
             {
@@ -123,7 +136,7 @@ namespace IotHubSync.Logic
             return isSuccess;
         }
 
-        public async Task<bool> SyncIotHubsAsync()
+            public async Task<bool> SyncIotHubsAsync()
         {
             bool isSuccess = true;
 
@@ -338,20 +351,30 @@ namespace IotHubSync.Logic
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, $"{deviceInfo.Device.Id}: Can not read device Twin from {type} IoT Hub.");
-                isSuccess = false;
+                if (ex is QuotaExceededException)
+                {
+                    _logger.LogWarning(ex, $"{deviceInfo.Device.Id}: Not allowed to read Twin from {type} IoT Hub.");
+                }
+                else 
+                {
+                    _logger.LogError(ex, $"{deviceInfo.Device.Id}: Error reading device Twin from {type} IoT Hub.");
+                    isSuccess = false;
+                }
             }
 
             // Update Device Twin in IoT Hub
-            try
+            if (deviceInfoSlave.Twin != null)
             {
-                deviceInfoSlave.Twin = await registryManager.UpdateTwinAsync(deviceInfo.Device.Id, deviceInfo.Twin, deviceInfoSlave.Twin.ETag);
-                await PreventIotHubThrottling();
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, $"{deviceInfo.Device.Id}: Can not update device Twin in {type} IoT Hub.");
-                isSuccess = false;
+                try
+                {
+                    deviceInfoSlave.Twin = await registryManager.UpdateTwinAsync(deviceInfo.Device.Id, deviceInfo.Twin, deviceInfoSlave.Twin.ETag);
+                    await PreventIotHubThrottling();
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, $"{deviceInfo.Device.Id}: Can not update device Twin in {type} IoT Hub.");
+                    isSuccess = false;
+                }
             }
 
             return isSuccess;

@@ -1,5 +1,5 @@
-// Copyright (c) Microsoft. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+// Default URL for triggering event grid function in the local environment.
+// http://localhost:7071/runtime/webhooks/EventGrid?functionName={functionname}
 
 namespace IotHubSync.AzureFunction
 {
@@ -7,36 +7,36 @@ namespace IotHubSync.AzureFunction
     using Microsoft.Azure.EventGrid.Models;
     using Microsoft.Azure.WebJobs.Extensions.EventGrid;
     using Microsoft.Extensions.Logging;
-    using System.Threading.Tasks;
     using IotHubSync.Logic;
+    using System.Threading.Tasks;
     using Microsoft.Extensions.Configuration;
-    using Microsoft.Azure.EventGrid;
 
     public static class IotHubSyncFunction
     {
         private static readonly string IotHubConnectionStringMasterKey = "IotHubConnectionStringMaster";
         private static readonly string IotHubConnectionStringSlaveKey = "IotHubConnectionStringSlave";
+        private static readonly string EventGridIotHubDeviceCreatedEvent = "Microsoft.Devices.DeviceCreated";
+        private static readonly string EventGridIotHubDeviceDeletedEvent = "Microsoft.Devices.DeviceDeleted";
 
         [FunctionName("EventGridDeviceCreatedOrDeleted")]
-        public static async Task EventGridDeviceCreatedOrDeleted([EventGridTrigger]EventGridEvent eventGridEvent, ILogger logger, ExecutionContext context)
+        public static async Task Run([EventGridTrigger]EventGridEvent eventGridEvent, ILogger logger, ExecutionContext context)
         {
             bool isSuccess = true;
 
-            if (eventGridEvent.EventType == EventTypes.IoTHubDeviceCreatedEvent ||
-                eventGridEvent.EventType == EventTypes.IoTHubDeviceDeletedEvent)
+            if (eventGridEvent.EventType == EventGridIotHubDeviceCreatedEvent || eventGridEvent.EventType == EventGridIotHubDeviceDeletedEvent)
             {
                 var deviceSynchronizer = new DeviceSynchronizer(GetConnectionStrings(context), logger);
 
-                if (eventGridEvent.EventType == EventTypes.IoTHubDeviceCreatedEvent)
+                if (eventGridEvent.EventType == EventGridIotHubDeviceCreatedEvent)
                 {
-                    logger.LogInformation($"EventGridDeviceCreatedOrDeleted function received IotHubDeviceCreatedEventData event from EventGrid.");
-                    isSuccess = await deviceSynchronizer.CreateDevice(eventGridEvent.Data.ToString());
+                    logger.LogInformation($"EventGridDeviceCreatedOrDeleted function received IotHubDeviceCreated event from EventGrid.");
+                    isSuccess = await deviceSynchronizer.CreateDeviceFromEventGridMessage(eventGridEvent.Data.ToString());
                 }
 
-                else if (eventGridEvent.EventType == EventTypes.IoTHubDeviceDeletedEvent)
+                else if (eventGridEvent.EventType == EventGridIotHubDeviceDeletedEvent)
                 {
-                    logger.LogInformation($"EventGridDeviceCreatedOrDeleted function received IotHubDeviceDeletedEventData event from EventGrid.");
-                    isSuccess = await deviceSynchronizer.DeleteDevice(eventGridEvent.Data.ToString());
+                    logger.LogInformation($"EventGridDeviceCreatedOrDeleted function received IotHubDeviceDeleted event from EventGrid.");
+                    isSuccess = await deviceSynchronizer.CreateDeviceFromEventGridMessage(eventGridEvent.Data.ToString());
                 }
 
                 if (isSuccess)
@@ -55,7 +55,7 @@ namespace IotHubSync.AzureFunction
         }
 
         [FunctionName("TimerTriggerSyncIotHubs")]
-        public static async Task TimerTriggerSyncIotHubs([TimerTrigger("0 0 * * * *")]TimerInfo myTimer, ILogger logger, ExecutionContext context)
+        public static async Task TimerTriggerSyncIotHubs([TimerTrigger("0 0 * * * *")] TimerInfo myTimer, ILogger logger, ExecutionContext context)
         {
             logger.LogInformation($"TimerTriggerSyncIotHubs function started.");
 

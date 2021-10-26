@@ -7,9 +7,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IotHubSync.Logic", "IotHubS
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IotHubSync.Service", "IotHubSync.Service\IotHubSync.Service.csproj", "{0DD18708-FF13-497C-88A1-1ABC919B4EC6}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IotHubSync.TestConsoleApp", "IotHubSync.TestConsoleApp\IotHubSync.TestConsoleApp.csproj", "{24FF7FBE-6B44-4A22-9723-CB7788F5903F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IotHubSync.TestConsoleApp", "IotHubSync.TestConsoleApp\IotHubSync.TestConsoleApp.csproj", "{24FF7FBE-6B44-4A22-9723-CB7788F5903F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IotHubSync.AzureFunction", "IotHubSync.AzureFunction\IotHubSync.AzureFunction.csproj", "{6EF3A848-F018-455F-A972-2DC9F576B93A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IotHubSync.AzureFunction", "IotHubSync.AzureFunction\IotHubSync.AzureFunction.csproj", "{DC7A53E4-BEF6-4A0B-97B1-CF2E0F823CB6}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -29,10 +29,10 @@ Global
 		{24FF7FBE-6B44-4A22-9723-CB7788F5903F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{24FF7FBE-6B44-4A22-9723-CB7788F5903F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{24FF7FBE-6B44-4A22-9723-CB7788F5903F}.Release|Any CPU.Build.0 = Release|Any CPU
-		{6EF3A848-F018-455F-A972-2DC9F576B93A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{6EF3A848-F018-455F-A972-2DC9F576B93A}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{6EF3A848-F018-455F-A972-2DC9F576B93A}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{6EF3A848-F018-455F-A972-2DC9F576B93A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DC7A53E4-BEF6-4A0B-97B1-CF2E0F823CB6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DC7A53E4-BEF6-4A0B-97B1-CF2E0F823CB6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DC7A53E4-BEF6-4A0B-97B1-CF2E0F823CB6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DC7A53E4-BEF6-4A0B-97B1-CF2E0F823CB6}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

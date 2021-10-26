@@ -5,18 +5,22 @@ namespace IotHubSync.Service.Controllers
 {
     using System;
     using System.Threading.Tasks;
+    using Azure.Messaging.EventGrid;
+    using Azure.Messaging.EventGrid.SystemEvents;
     using IotHubSync.Service.Interfaces;
     using Microsoft.AspNetCore.Authorization;
     using Microsoft.AspNetCore.Mvc;
-    using Microsoft.Azure.EventGrid;
-    using Microsoft.Azure.EventGrid.Models;
     using Microsoft.Extensions.Logging;
+    using Newtonsoft.Json;
     using Newtonsoft.Json.Linq;
 
     [Route("api"), AllowAnonymous]
     [ApiController]
     public class EventGridController : ControllerBase
     {
+        private static readonly string EventGridIotHubDeviceCreatedEvent = "Microsoft.Devices.DeviceCreated";
+        private static readonly string EventGridIotHubDeviceDeletedEvent = "Microsoft.Devices.DeviceDeleted";
+
         private readonly ILogger _logger;
         private readonly IDeviceSynchronizerSingleton _deviceSynchronizerSingleton;
         private readonly ISemaphoreSingleton _semaphoreSingleton;
@@ -76,65 +80,56 @@ namespace IotHubSync.Service.Controllers
         // Set to AllowAnonymous so that Azure EventGrid can call it.
         // Will only execute if a valid EventGrid EventType is received. Returns Bad Request otherwise.
         [HttpPost("eventgrid_device_created_deleted"), AllowAnonymous]
-        public async Task<IActionResult> EventGridDeviceCreatedOrDeleted([FromBody] EventGridEvent[] events)
+        public async Task<IActionResult> EventGridDeviceCreatedOrDeleted([FromBody] object request)
         {
             var isSuccess = true;
 
-            foreach (EventGridEvent receivedEvent in events)
+            EventGridEvent[] eventGridEvents = EventGridEvent.ParseMany(BinaryData.FromString(request.ToString()));
+
+            foreach (EventGridEvent eventGridEvent in eventGridEvents)
             {
-                if (receivedEvent.EventType == EventTypes.IoTHubDeviceCreatedEvent ||
-                    receivedEvent.EventType == EventTypes.IoTHubDeviceDeletedEvent)
+                // Handle system events
+                if (eventGridEvent.TryGetSystemEventData(out object eventData))
                 {
-                    try
+                    // Handle the subscription validation event
+                    if (eventData is SubscriptionValidationEventData subscriptionValidationEventData)
                     {
-                        await _semaphoreSingleton.Semaphore.WaitAsync();
+                        _logger.LogInformation($"Received SubscriptionValidation event data, validation code: {subscriptionValidationEventData.ValidationCode}, topic: {eventGridEvent.Topic}");
 
-                        if (receivedEvent.EventType == EventTypes.IoTHubDeviceCreatedEvent)
+                        var responseData = new SubscriptionValidationResponse()
                         {
+                            ValidationResponse = subscriptionValidationEventData.ValidationCode
+                        };
+                        return new OkObjectResult(responseData);
+                    }
+
+                    if (eventData is IotHubDeviceCreatedEventData deviceCreatedData)
+                    {
+                        try
+                        {
+                            await _semaphoreSingleton.Semaphore.WaitAsync();
                             _logger.LogInformation($"Received IotHubDeviceCreatedEventData event from EventGrid.");
-                            isSuccess = await IoTHubDeviceCreated(isSuccess, receivedEvent);
+                            isSuccess = await IoTHubDeviceCreated(isSuccess, deviceCreatedData);
                         }
-
-                        else if (receivedEvent.EventType == EventTypes.IoTHubDeviceDeletedEvent)
+                        finally
                         {
-                            _logger.LogInformation($"Received IotHubDeviceDeletedEventData event from EventGrid.");
-                            isSuccess = await IoTHubDeviceDeleted(isSuccess, receivedEvent);
+                            _semaphoreSingleton.Semaphore.Release();
                         }
                     }
 
-                    finally
+                    if (eventData is IotHubDeviceDeletedEventData deviceDeletedData)
                     {
-                        _semaphoreSingleton.Semaphore.Release();
-                    }
-                }
-
-                else if (receivedEvent.EventType == EventTypes.EventGridSubscriptionValidationEvent)
-                {
-                    _logger.LogInformation($"Received SubscriptionValidation event from EventGrid.");
-
-                    SubscriptionValidationEventData eventData;
-                    try
-                    {
-                        if (receivedEvent.Data != null && receivedEvent.Data is JObject jObject)
+                        try
                         {
-                            eventData = jObject.ToObject<SubscriptionValidationEventData>();
+                            await _semaphoreSingleton.Semaphore.WaitAsync();
+                            _logger.LogInformation($"Received IotHubDeviceCreatedEventData event from EventGrid.");
+                            isSuccess = await IoTHubDeviceDeleted(isSuccess, deviceDeletedData);
                         }
-                        else
+                        finally
                         {
-                            throw new ArgumentException("Data is null or not a JObject", nameof(events));
+                            _semaphoreSingleton.Semaphore.Release();
                         }
                     }
-                    catch (Exception ex)
-                    {
-                        _logger.LogError(ex, $"Invalid data received from EventGrid.");
-                        return BadRequest();
-                    }
-
-                    _logger.LogInformation($"Validation code: {eventData.ValidationCode}, topic: {receivedEvent.Topic}");
-
-                    var response = new SubscriptionValidationResponse(eventData.ValidationCode);
-
-                    return Ok(response);
                 }
             }
 
@@ -148,31 +143,11 @@ namespace IotHubSync.Service.Controllers
             }
         }
 
-        private async Task<bool> IoTHubDeviceDeleted(bool isSuccess, EventGridEvent receivedEvent)
+        private async Task<bool> IoTHubDeviceDeleted(bool isSuccess, IotHubDeviceDeletedEventData deletedEventData)
         {
-            IotHubDeviceDeletedEventData eventData = null;
-            try
-            {
-                if (receivedEvent.Data is JObject jObject)
-                {
-                    eventData = jObject.ToObject<IotHubDeviceDeletedEventData>();
-                }
-                else
-                {
-                    throw new ArgumentException("Data is null or not a JObject", nameof(receivedEvent));
-                }
-            }
-            catch (Exception ex)
-            {
-                isSuccess = false;
-                _logger.LogError(ex, $"Invalid data received from EventGrid.");
-            }
 
-            if (isSuccess)
-            {
-                _logger.LogInformation($"DeviceId: {eventData.DeviceId}.");
-                isSuccess = await _deviceSynchronizerSingleton.DeviceSynchronizer.DeleteDevice(receivedEvent.Data.ToString());
-            }
+            _logger.LogInformation($"DeviceId: {deletedEventData.DeviceId}.");
+            isSuccess = await _deviceSynchronizerSingleton.DeviceSynchronizer.DeleteDeviceFromDeviceId(deletedEventData.DeviceId);
 
             if (isSuccess)
             {
@@ -186,31 +161,11 @@ namespace IotHubSync.Service.Controllers
             return isSuccess;
         }
 
-        private async Task<bool> IoTHubDeviceCreated(bool isSuccess, EventGridEvent receivedEvent)
+        private async Task<bool> IoTHubDeviceCreated(bool isSuccess, IotHubDeviceCreatedEventData createdEventData)
         {
-            IotHubDeviceCreatedEventData eventData = null;
-            try
-            {
-                if (receivedEvent.Data is JObject jObject)
-                {
-                    eventData = jObject.ToObject<IotHubDeviceCreatedEventData>();
-                }
-                else
-                {
-                    throw new ArgumentException("Data is null or not a JObject", nameof(receivedEvent));
-                }
-            }
-            catch (Exception ex)
-            {
-                isSuccess = false;
-                _logger.LogError(ex, $"Invalid data received from EventGrid.");
-            }
 
-            if (isSuccess)
-            {
-                _logger.LogInformation($"DeviceId: {eventData.DeviceId}.");
-                isSuccess = await _deviceSynchronizerSingleton.DeviceSynchronizer.CreateDevice(receivedEvent.Data.ToString());
-            }
+            _logger.LogInformation($"DeviceId: {createdEventData.DeviceId}.");
+            isSuccess = await _deviceSynchronizerSingleton.DeviceSynchronizer.CreateDeviceFromDeviceId(createdEventData.DeviceId);
 
             if (isSuccess)
             {
